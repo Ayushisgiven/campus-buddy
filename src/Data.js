@@ -32,7 +32,12 @@ export const translations = {
     backToLogin: "Back to Login",
     newPass: "New Password",
     resetBtn: "Reset Password",
-    registerBtn: "Register"
+    registerBtn: "Register",
+    deleteAccount: "Delete Account",
+    deleteConfirmTitle: "Confirm Account Deletion",
+    deleteConfirmText: "This action is permanent. Enter your password to delete your account:",
+    cancel: "Cancel",
+    deleteBtn: "Delete Permanently"
   },
   hi: {
     title: "कैंपस बडी",
@@ -67,7 +72,12 @@ export const translations = {
     backToLogin: "लॉगिन पर वापस जाएं",
     newPass: "नया पासवर्ड",
     resetBtn: "पासवर्ड रीसेट करें",
-    registerBtn: "रजिस्टर करें"
+    registerBtn: "रजिस्टर करें",
+    deleteAccount: "खाता हटाएं",
+    deleteConfirmTitle: "खाता हटाने की पुष्टि करें",
+    deleteConfirmText: "यह क्रिया स्थायी है। अपना खाता हटाने के लिए अपना पासवर्ड दर्ज करें:",
+    cancel: "रद्द करें",
+    deleteBtn: "स्थायी रूप से हटाएं"
   },
   te: {
     title: "క్యాంపస్ బడ్డీ",
@@ -102,6 +112,11 @@ export const translations = {
     backToLogin: "లాగిన్‌కి తిరిగి వెళ్లండి",
     newPass: "కొత్త పాస్‌వర్డ్",
     resetBtn: "పాస్‌వర్డ్ రీసెట్ చేయండి",
-    registerBtn: "నమోదు చేయండి"
+    registerBtn: "నమోదు చేయండి",
+    deleteAccount: "ఖాతాను తొలగించండి",
+    deleteConfirmTitle: "ఖాతా తొలగింపును నిర్ధారించండి",
+    deleteConfirmText: "ఈ చర్య శాశ్వతం. మీ ఖాతాను తొలగించడానికి మీ పాస్‌వర్డ్‌ను నమోదు చేయండి:",
+    cancel: "రద్దు చేయి",
+    deleteBtn: "శాశ్వతంగా తొలగించండి"
   }
 };

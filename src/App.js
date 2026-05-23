@@ -8,7 +8,8 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [lang, setLang] = useState('en');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'));
+  const [currentUser, setCurrentUser] = useState(() => localStorage.getItem('currentUser') || '');
   const [query, setQuery] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,12 +22,29 @@ function App() {
   const [otpRequested, setOtpRequested] = useState(false);
   const [otp, setOtp] = useState('');
 
-  // Stats (mock for UI)
-  const [registeredUsers, setRegisteredUsers] = useState(() => parseInt(localStorage.getItem('reg_users') || '1'));
+  // Account Deletion Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+
+  // Stats (fetched dynamically from backend)
+  const [registeredUsers, setRegisteredUsers] = useState(1);
+
+  const fetchUserCount = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/user-count/`);
+      if (res.ok) {
+        const data = await res.json();
+        setRegisteredUsers(data.count || 1);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user count:", error);
+    }
+  };
 
   useEffect(() => {
-    localStorage.setItem('reg_users', registeredUsers.toString());
-  }, [registeredUsers]);
+    fetchUserCount();
+  }, [isLoggedIn]);
+
 
   const t = translations[lang];
   const chatEndRef = useRef(null);
@@ -179,6 +197,8 @@ If the answer is not available in the FAQ data, say:
           setRegisteredUsers(prev => prev + 1);
         } else {
           localStorage.setItem('token', data.access);
+          localStorage.setItem('currentUser', formattedUsername);
+          setCurrentUser(formattedUsername);
           setIsLoggedIn(true);
           setChatHistory([{ role: 'bot', isGreeting: true, content: '' }]);
         }
@@ -189,6 +209,43 @@ If the answer is not available in the FAQ data, say:
       alert("Backend is offline. Run python manage.py runserver");
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    setIsLoggedIn(false);
+    setCurrentUser('');
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    if (!deletePassword) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/delete-account/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: currentUser,
+          password: deletePassword
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Your account has been deleted successfully.");
+        setShowDeleteModal(false);
+        setDeletePassword('');
+        handleLogout();
+      } else {
+        alert(data.error || "Failed to delete account. Please verify your password.");
+      }
+    } catch (error) {
+      alert("Backend is offline. Could not complete deletion.");
+    }
+  };
+
 
   const passwordRules = [
     { label: "At least 8 characters", valid: password.length >= 8 },
@@ -221,10 +278,18 @@ If the answer is not available in the FAQ data, say:
           </button>
           {isLoggedIn && (
             <>
+              {currentUser && (
+                <span className="user-profile-badge" style={{ marginRight: '10px', fontSize: '0.9rem', padding: '4px 10px', background: 'rgba(0,0,0,0.06)', borderRadius: '12px', fontWeight: '500', color: 'var(--text-color)' }}>
+                  👤 {currentUser.split('@')[0]}
+                </span>
+              )}
               <button className="icon-btn" onClick={() => setChatHistory([{ role: 'bot', isGreeting: true, content: '' }])} title="Clear Chat">
                 🗑️
               </button>
-              <button className="icon-btn" onClick={() => { setIsLoggedIn(false); }} title={t.logout}>
+              <button className="icon-btn danger-btn" onClick={() => setShowDeleteModal(true)} title={t.deleteAccount}>
+                ⚠️
+              </button>
+              <button className="icon-btn" onClick={handleLogout} title={t.logout}>
                 🚪
               </button>
             </>
@@ -431,6 +496,49 @@ If the answer is not available in the FAQ data, say:
           </div>
         )}
       </main>
+
+      {showDeleteModal && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal">
+            <h3>⚠️ {t.deleteConfirmTitle}</h3>
+            <p>{t.deleteConfirmText}</p>
+            <form onSubmit={handleDeleteAccount}>
+              <div className="boxy-input-wrapper" style={{ margin: '15px 0' }}>
+                <span className="input-icon">🔒</span>
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  className="boxy-input"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-color)', cursor: 'pointer' }}
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeletePassword('');
+                  }}
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="submit"
+                  className="btn-danger"
+                  style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  {t.deleteBtn}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
