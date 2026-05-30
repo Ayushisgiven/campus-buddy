@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# custom additions for Django and secrets
+.env
+campus_backend/.env
+campus_backend/db.sqlite3
+campus_backend/venv/
+__pycache__/
+*.pyc
+

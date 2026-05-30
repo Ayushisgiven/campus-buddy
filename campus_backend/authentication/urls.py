@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import signup_view, login_view, forgot_password_view, request_otp_view, user_count_view, delete_account_view
+from .views import signup_view, login_view, forgot_password_view, request_otp_view, user_count_view, delete_account_view, chat_view
 
 urlpatterns = [
     path('signup/', signup_view, name='signup'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('request-otp/', request_otp_view, name='request_otp'),
     path('user-count/', user_count_view, name='user_count'),
     path('delete-account/', delete_account_view, name='delete_account'),
+    path('chat/', chat_view, name='chat'),
 ]

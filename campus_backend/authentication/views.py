@@ -7,6 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import resend
 from django.core.cache import cache
 import random
+import os
+import requests
 
 resend.api_key = 're_BKakQNQ1_Q5xkoSH1vhUUimummtG5DFu9'
 
@@ -122,4 +124,41 @@ def delete_account_view(request):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-    return Response({"error": "Invalid password. Could not delete account."}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({"error": "Invalid password. Could not delete account."}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+def chat_view(request):
+    messages = request.data.get('messages')
+    if not messages:
+        return Response({"error": "Messages are required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Retrieve Mistral API key from environment, with fallback to default key
+    mistral_api_key = os.environ.get('MISTRAL_API_KEY', 'HT3I3k8zRo8wox9vRAe1mfo4ONtct0C3')
+    
+    try:
+        response = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            json={
+                "model": "mistral-small-latest",
+                "messages": messages,
+                "temperature": 0.3,
+                "max_tokens": 300
+            },
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {mistral_api_key}"
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            return Response(response.json(), status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"error": f"Mistral API returned status {response.status_code}", "details": response.text},
+                status=response.status_code
+            )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

@@ -62,17 +62,13 @@ function App() {
     setQuery('');
     setLoading(true);
 
-    const MISTRAL_API_KEY = "HT3I3k8zRo8wox9vRAe1mfo4ONtct0C3";
-
     try {
-      const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/chat/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${MISTRAL_API_KEY}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "mistral-small-latest",
           messages: [
             {
               role: "system",
@@ -95,9 +91,7 @@ If the answer is not available in the FAQ data, say:
               role: "user",
               content: forcedQuery
             }
-          ],
-          temperature: 0.3,
-          max_tokens: 300
+          ]
         })
       });
 
